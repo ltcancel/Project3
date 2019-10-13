@@ -1,0 +1,94 @@
+---
+title: "SimplyHired Job Search"
+author: "LeTicia Cancel"
+date: "10/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Load Libraries
+```{r warning=FALSE, message=FALSE}
+#install.packages("rvest") #install rvest package if it is not already installed
+library(rvest)
+library(stringr)
+library(tidyverse)
+
+```
+
+#### Pieces needed to build the www.simplyhired.com for each specific page
+```{r}
+site.pt1 <- "https://www.simplyhired.com/search?q=data+scientist&l=Brooklyn%2C+NY&pn="
+site.pt2 <- "&job=FKql1P5_hBC1iuZNXkobdYwS3L8hYW8qlp10RE0p-U_OOFU210Cs4g"
+pages = 10
+```
+
+
+#### Loop through 10 pages to get 100+ postings 
+```{r}
+job_description <- as.character()
+
+for (i in 1:pages){
+  #create URL for each page - 10 pages total
+  url <- str_c(site.pt1, page_num = i, site.pt2)
+  
+  #read URL data
+  listings <- read_html(url)
+  
+  #pull necessary data from each page  
+  job_title <- listings %>%
+    html_nodes("div") %>%
+    html_nodes(".jobposting-title") %>%
+    html_text()
+  
+  hiring_company <- listings %>%
+    html_nodes("div") %>%
+    html_nodes(".jobposting-company") %>%
+    html_text()
+  
+  location <- listings %>%
+    html_nodes("div") %>%
+    html_nodes('[itemprop="address"]') %>%
+    html_text()
+  
+  salary <- listings %>%
+    html_nodes("div") %>%
+    html_nodes('.SerpJob-metaInfo') %>%
+    html_text()
+  
+  job_url <- listings %>%
+    html_nodes("div") %>%
+    html_nodes(".jobposting-title") %>%
+    html_nodes("a") %>%
+    html_attr("href") %>%
+    as.character()
+  
+  #add beginning of main URL to job_url to create a useable URL for the FOR loop
+  job_url_joined <- str_c("https://www.simplyhired.com",job_url)
+  
+  #second loop to get job description for each job posted on each page
+  for(j in 1:length(job_url_joined)){
+    desc <- read_html(job_url_joined[j])
+    job_description[j] <- desc %>%
+      html_nodes("div") %>%
+      html_nodes(".ViewJob-description") %>%
+      html_text() %>%
+      as.character()
+  }
+  
+  if(i==1){
+    df_simplyhired <- tibble(job_title, hiring_company, location, salary, job_url_joined, job_description)
+  }
+  else{
+    df_simplyhired <- add_row(df, job_title, hiring_company, location, salary, job_url_joined, job_description)
+  }
+}
+
+head(df_simplyhired)
+
+##Create csv file with all Data Scientist job postings scraped from www.simplyhired.com
+write.csv(df_simplyhired, file = "SimplyHiredJobs.csv", row.names = FALSE)
+```
+
