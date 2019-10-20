@@ -11,10 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Load Libraries
 ```{r warning=FALSE, message=FALSE}
-install.packages("rvest") #install rvest package if it is not already installed
-install.packages("tidyverse")
-install.packages("dplyr")
-install.packages("knitr")
+#install.packages("rvest") #install rvest package if it is not already installed
+#install.packages("tidyverse")
+#install.packages("dplyr")
+#install.packages("knitr")
 library(dplyr)
 library(rvest)
 library(stringr)
