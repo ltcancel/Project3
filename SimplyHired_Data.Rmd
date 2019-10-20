@@ -11,7 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Load Libraries
 ```{r warning=FALSE, message=FALSE}
-#install.packages("rvest") #install rvest package if it is not already installed
+install.packages("rvest") #install rvest package if it is not already installed
+install.packages("tidyverse")
+install.packages("dplyr")
+install.packages("knitr")
+library(dplyr)
 library(rvest)
 library(stringr)
 library(tidyverse)
@@ -20,8 +24,11 @@ library(tidyverse)
 
 #### Pieces needed to build the www.simplyhired.com for each specific page
 ```{r}
+#first half of url
 site.pt1 <- "https://www.simplyhired.com/search?q=data+scientist&l=Brooklyn%2C+NY&pn="
+#second half of url
 site.pt2 <- "&job=FKql1P5_hBC1iuZNXkobdYwS3L8hYW8qlp10RE0p-U_OOFU210Cs4g"
+#number of pages to loop through to collect job postings
 pages = 10
 ```
 
@@ -82,13 +89,25 @@ for (i in 1:pages){
     df_simplyhired <- tibble(job_title, hiring_company, location, salary, job_url_joined, job_description)
   }
   else{
-    df_simplyhired <- add_row(df, job_title, hiring_company, location, salary, job_url_joined, job_description)
+    df_simplyhired <- add_row(df_simplyhired, job_title, hiring_company, location, salary, job_url_joined, job_description)
   }
 }
 
 head(df_simplyhired)
 
 ##Create csv file with all Data Scientist job postings scraped from www.simplyhired.com
-write.csv(df_simplyhired, file = "SimplyHiredJobs.csv", row.names = FALSE)
+##commented out since csv file was created and added to github
+##remove comment from write.csv if a new file needs to be created
+
+#write.csv(df_simplyhired, file = "SimplyHiredJobs.csv", row.names = FALSE)
+
+##get csv file from gitHub
+sh_file <- "https://raw.githubusercontent.com/ltcancel/DataScience_skills/master/SimplyHiredJobs.csv"
+
+##load simply hired data to simplyhired_data to be used for analysis
+simplyhired_data <- read.csv(sh_file, header = TRUE)
+
+#display first few rows from loaded csv
+head(simplyhired_data)
 ```
 
